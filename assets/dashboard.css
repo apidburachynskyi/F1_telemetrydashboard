@@ -1,0 +1,181 @@
+/* Global resets & typography  */
+* { box-sizing: border-box; }
+
+body {
+  background: #08090d;
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d0f14; }
+::-webkit-scrollbar-thumb { background: #1a1d24; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #252830; }
+
+/* Section headers */
+.f1-section-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  padding: 0 0 0 10px;
+  margin-bottom: 14px;
+  border-left: 3px solid #e8002d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Cards */
+.f1-card {
+  background: #0d0f14;
+  border: 1px solid #1a1d24;
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+
+.f1-card-sm {
+  background: #12151c;
+  border: 1px solid #1a1d24;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+/* Tables─ */
+.f1-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.f1-table thead th {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  color: #444;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #1a1d24;
+  text-transform: uppercase;
+}
+
+.f1-table tbody tr {
+  border-bottom: 1px solid #12151c;
+  transition: background 0.12s;
+}
+
+.f1-table tbody tr:hover { background: #0f1118; }
+
+.f1-table tbody td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+/* Position badges */
+.pos-badge {
+  width: 30px; height: 30px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-1 { background: #ffd700; color: #000; }
+.pos-2 { background: #c0c0c0; color: #000; }
+.pos-3 { background: #cd7f32; color: #000; }
+.pos-other { background: #12151c; color: #e0e0e0; border: 1px solid #1a1d24; }
+
+/* Stat cards─ */
+.stat-card {
+  background: #12151c;
+  border: 1px solid #1a1d24;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #444;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0e0e0;
+}
+
+/* Weather info cards─ */
+.info-card {
+  background: #0d0f14;
+  border: 1px solid #1a1d24;
+  border-radius: 6px;
+  padding: 10px 14px;
+  flex: 1;
+  min-width: 80px;
+}
+
+.info-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #444;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0e0e0;
+}
+
+/* Driver name cell─ */
+.drv-first  { font-size: 9px; color: #666; letter-spacing: 0.5px; }
+.drv-last   { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; }
+
+/* Gap / delta text─ */
+.gap-leader { color: #555; font-size: 11px; }
+.gap-time   { color: #aaa; font-size: 12px; font-weight: 600; }
+.delta-pos  { color: #00d2be; font-size: 11px; font-weight: 700; }
+.delta-neg  { color: #e8002d; font-size: 11px; font-weight: 700; }
+.delta-zero { color: #555; font-size: 11px; }
+
+/* Team logo img */
+.team-logo {
+  height: 16px;
+  width: auto;
+  opacity: 0.9;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* Tyre dot─ */
+.tyre-dot {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Tab content area─ */
+.tab-content { padding: 16px 20px; }
+
+/* Segment header (quali)─ */
+.seg-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 0 0 0 8px;
+  margin-bottom: 10px;
+  border-left: 3px solid;
+}
