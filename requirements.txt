@@ -7,6 +7,7 @@ numpy==1.26.4
 scipy==1.13.0
 flask-caching==2.3.0
 gunicorn==21.2.0
+gevent==24.2.1
 requests==2.32.3
 black==24.4.2
 flake8==7.1.0

@@ -34,6 +34,7 @@ except Exception as e:
 EOF
 
 exec gunicorn app:server \
+    --worker-class gevent \
     --workers 1 \
-    --timeout 180 \
+    --timeout 300 \
     --bind "0.0.0.0:${PORT:-8050}"
