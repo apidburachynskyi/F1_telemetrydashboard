@@ -21,22 +21,51 @@ spec:
           env:
             - name: FF1_CACHE_DIR
               value: /app/cache
+            - name: S3_BUCKET
+              value: f1-dashboard-cache
+            - name: AWS_S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: s3-credentials
+                  key: AWS_S3_ENDPOINT
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: s3-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_SESSION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: s3-credentials
+                  key: AWS_SESSION_TOKEN
+                  optional: true
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: s3-credentials
+                  key: AWS_DEFAULT_REGION
+                  optional: true
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "250m"
             limits:
-              memory: "1Gi"
+              memory: "2Gi"
               cpu: "500m"
           livenessProbe:
             httpGet:
               path: /health
               port: 8050
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /health
               port: 8050
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             periodSeconds: 10
