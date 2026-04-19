@@ -1,3 +1,4 @@
+import traceback
 import numpy as np
 import pandas as pd
 import json
@@ -507,6 +508,31 @@ layout = dcc.Loading(
 def build_page(session_key, selected_drivers):
     if not session_key:
         return empty()
+    try:
+        return _build_page_inner(session_key, selected_drivers)
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[corner_analysis] ERROR: {e}\n{tb}")
+        return html.Div(
+            [
+                html.Div(
+                    f"Corner Analysis error: {e}",
+                    style={"color": ACCENT, "padding": "20px", "fontWeight": "700"},
+                ),
+                html.Pre(
+                    tb,
+                    style={
+                        "color": "#888",
+                        "fontSize": "11px",
+                        "padding": "10px 20px",
+                        "whiteSpace": "pre-wrap",
+                    },
+                ),
+            ]
+        )
+
+
+def _build_page_inner(session_key, selected_drivers):
     try:
         year, gp, stype = session_key.split("|")
         session = get_cached_session(int(year), gp, stype)

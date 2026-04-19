@@ -99,7 +99,7 @@ def _resample_spatial(arr, n):
 #  Main build function
 
 
-def build(active_tels: dict, mode: str = "team", n_frames: int = 100) -> go.Figure:
+def build(active_tels: dict, mode: str = "team", n_frames: int = 30) -> go.Figure:
     """
     Build an animated racing line figure for a corner.
 
