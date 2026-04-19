@@ -2,6 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, State, callback
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     BG2,
     GRID,
@@ -454,6 +455,7 @@ layout = dcc.Loading(
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("replay")
 def render(store, session_key, selected_drivers):
     if not store or not session_key:
         return empty()

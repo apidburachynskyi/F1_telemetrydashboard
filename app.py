@@ -4,6 +4,8 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc, Input, Output, State, ctx, ALL
 from flask_caching import Cache
+from flask import request, Response
+from functools import wraps
 import fastf1
 from pathlib import Path
 
@@ -53,6 +55,121 @@ server = app.server
 @server.route("/health")
 def health():
     return {"status": "ok"}, 200
+
+
+_MONITORING_USER = os.environ.get("MONITORING_USER", "admin")
+_MONITORING_PASSWORD = os.environ.get("MONITORING_PASSWORD", "f1admin2026")
+
+
+def _require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if (
+            not auth
+            or auth.username != _MONITORING_USER
+            or auth.password != _MONITORING_PASSWORD
+        ):
+            return Response(
+                "Access denied",
+                401,
+                {"WWW-Authenticate": 'Basic realm="F1 Monitoring"'},
+            )
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+@server.route("/monitoring")
+@_require_auth
+def monitoring_page():
+    from components.perf_metrics import RENDER_HISTORY
+    from prometheus_client import REGISTRY
+
+    tab_labels = {
+        "overview": "Overview",
+        "qualifying": "Qualifying",
+        "replay": "Race Replay",
+        "corner": "Corner Analysis",
+        "tyre": "Tyre Analysis",
+        "lap": "Lap Analysis",
+        "progression": "Race Progression",
+        "pitstops": "Pit Stops",
+    }
+    counts, sums = {}, {}
+    for metric in REGISTRY.collect():
+        if metric.name != "f1_tab_render_seconds":
+            continue
+        for s in metric.samples:
+            tab = s.labels.get("tab", "?")
+            if s.name == "f1_tab_render_seconds_count":
+                counts[tab] = s.value
+            elif s.name == "f1_tab_render_seconds_sum":
+                sums[tab] = s.value
+    rows = sorted(
+        [
+            {
+                "tab": tab_labels.get(t, t),
+                "calls": int(counts[t]),
+                "avg": round(sums.get(t, 0) / counts[t], 2) if counts[t] else 0,
+            }
+            for t in counts
+        ],
+        key=lambda r: r["avg"],
+        reverse=True,
+    )
+    last_render = f"{RENDER_HISTORY[-1]['duration']:.2f}s" if RENDER_HISTORY else "—"
+
+    def color(avg):
+        if avg > 5:
+            return "#e8002d"
+        if avg > 1:
+            return "#00d2be"
+        return "#39b54a"
+
+    rows_html = "".join(
+        f"<tr><td>{r['tab']}</td><td>{r['calls']}</td>"
+        f"<td style='color:{color(r['avg'])};font-weight:700'>{r['avg']:.2f}s</td></tr>"
+        for r in rows
+    )
+    html_page = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>F1 Dashboard — Monitoring</title>
+  <meta http-equiv="refresh" content="15">
+  <style>
+    body{{background:#08090d;color:#ccc;font-family:sans-serif;padding:32px;}}
+    h1{{font-size:18px;letter-spacing:3px;color:#fff;margin-bottom:24px;}}
+    .cards{{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}}
+    .card{{background:#0d0f14;border:1px solid #1e2229;border-radius:8px;padding:16px 22px;min-width:140px;}}
+    .label{{font-size:10px;color:#555;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;}}
+    .value{{font-size:26px;font-weight:700;color:#fff;}}
+    table{{width:100%;border-collapse:collapse;background:#0d0f14;border:1px solid #1e2229;border-radius:8px;}}
+    th{{font-size:10px;color:#555;letter-spacing:1px;padding:10px 16px;text-align:left;border-bottom:1px solid #1e2229;}}
+    td{{padding:10px 16px;font-size:13px;border-bottom:1px solid #12141a;}}
+    tr:last-child td{{border-bottom:none;}}
+    .legend{{font-size:11px;color:#555;margin-top:10px;}}
+    .note{{font-size:10px;color:#333;margin-top:24px;}}
+  </style>
+</head>
+<body>
+  <h1>F1 DASHBOARD — MONITORING</h1>
+  <div class="cards">
+    <div class="card"><div class="label">LAST RENDER</div>
+      <div class="value">{last_render}</div></div>
+    <div class="card"><div class="label">TABS TRACKED</div>
+      <div class="value">{len(rows)}</div></div>
+  </div>
+  <table>
+    <thead><tr><th>TAB</th><th>CALLS</th><th>AVG RENDER</th></tr></thead>
+    <tbody>{rows_html}</tbody>
+  </table>
+  <div class="legend">&#x1F7E2; &lt;1s &nbsp; &#x1F535; 1–5s &nbsp; &#x1F534; &gt;5s</div>
+  <div class="note">Auto-refresh every 15s</div>
+</body>
+</html>"""
+    return html_page, 200, {"Content-Type": "text/html"}
 
 
 # Server-side session cache

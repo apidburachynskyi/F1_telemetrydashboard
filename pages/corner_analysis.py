@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.interpolate import CubicSpline
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     TYRE_COLORS,
     BG2,
@@ -505,6 +506,7 @@ layout = dcc.Loading(
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("corner")
 def build_page(session_key, selected_drivers):
     if not session_key:
         return empty()

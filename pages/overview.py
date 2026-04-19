@@ -1,6 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, callback
+from components.perf_metrics import tab_timer
 from components.shared import (
     TYRE_COLORS,
     BG2,
@@ -138,6 +139,7 @@ layout = html.Div(id="overview-container", children=[empty_state()])
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("overview")
 def render(store, selected_drivers):
     if not store:
         return empty_state()
