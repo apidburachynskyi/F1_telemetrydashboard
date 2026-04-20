@@ -79,9 +79,9 @@ This dashboard was built to bridge that gap. It provides an interactive environm
 ```bash
 pip install -r requirements.txt
 python app.py
-
-Then open [http://localhost:8050](http://localhost:8050).
 ```
+Then open [http://localhost:8050](http://localhost:8050).
+
 ---
 ## Architecture
 
