@@ -8,7 +8,6 @@ from components.shared import (
     axis_label,
 )
 
-
 # Data preparation
 
 

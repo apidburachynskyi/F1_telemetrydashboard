@@ -2,6 +2,7 @@ from dash import html, dcc
 import pages.championship as pg_championship
 from components.shared import BG2, GRID, TEXT, FONT
 
+
 def championship_view():
     return html.Div(
         style={"background": "#08090d", "minHeight": "100vh", "fontFamily": FONT},

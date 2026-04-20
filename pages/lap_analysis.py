@@ -15,7 +15,6 @@ from components.shared import (
 )
 from components.charts.telemetry import build as build_telemetry
 
-
 # Sector time
 
 

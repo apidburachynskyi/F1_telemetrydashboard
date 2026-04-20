@@ -15,7 +15,6 @@ from components.shared import (
     team_logo_img,
 )
 
-
 # Usefull
 
 

@@ -75,7 +75,7 @@ def build_active_tels(tels_data, apex_dist):
     """
     DOESNT WORK PROPERLY NEED complete overhaul of process
     """
-    #  Pass 1: collect each driver's real rel-dist span 
+    #  Pass 1: collect each driver's real rel-dist span
     spans = {}  # drv -> (rel_min, rel_max, rel_raw, mask)
     for drv, data in tels_data.items():
         dist = np.array(data["distance"])

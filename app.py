@@ -23,7 +23,6 @@ from components.shared import (
 )
 import components.shared as _shared
 
-
 # FastF1 cache
 CACHE_DIR = os.environ.get("FF1_CACHE_DIR", "./cache")
 Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)

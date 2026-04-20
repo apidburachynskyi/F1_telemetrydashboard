@@ -3,6 +3,7 @@
 Weekly sync script downloads completed race/qualifying sessions into
 
 """
+
 import argparse
 import json
 import os

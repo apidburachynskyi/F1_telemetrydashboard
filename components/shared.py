@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-
 # FastF1 cache
 CACHE_DIR = os.environ.get("FF1_CACHE_DIR", "./cache")
 Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)

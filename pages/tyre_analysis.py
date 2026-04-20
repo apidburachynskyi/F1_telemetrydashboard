@@ -14,7 +14,6 @@ from components.shared import (
 )
 from components.charts import lap_time, tyre_deg
 
-
 # Stint data computation
 
 
