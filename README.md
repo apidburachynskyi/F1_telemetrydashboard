@@ -197,7 +197,6 @@ f1-dashboard/
 ├── assets/                 # Static files (CSS, logos, images)
 │
 ├── views/                  # High-level UI builders extracted from app.py
-│   ├── __pycache__/
 │   ├── championship.py     # Championship page wrapper
 │   ├── landing.py          # Landing page view
 │   ├── root_layout.py      # Global app layout and dcc.Store setup
@@ -219,7 +218,6 @@ f1-dashboard/
 │   ├── __init__.py
 │   ├── monitoring.py       # Monitoring route helpers and HTML rendering
 │   ├── perf_metrics.py     # Tab render timing / monitoring helpers
-│   ├── shared.py           # Shared constants, formatting, session helpers
 │   ├── sidebar.py          # Session selector + driver checklist UI
 │   │
 │   ├── charts/             # Visualization modules
@@ -232,12 +230,21 @@ f1-dashboard/
 │   │   ├── telemetry.py
 │   │   └── tyre_deg.py
 │   │
+│   ├── core/               # Core constants, formatting, theme, and session logic
+│   │   ├── __init__.py
+│   │   ├── constants.py
+│   │   ├── formatting.py
+│   │   ├── sessions.py
+│   │   └── theme.py
+│   │
 │   ├── data/               # Data loading / external API helpers
+│   │   ├── __init__.py
 │   │   ├── jolpica.py
 │   │   ├── results_loader.py
 │   │   └── session_loader.py
 │   │
 │   └── ui/                 # Shared UI and chart styling helpers
+│       ├── __init__.py
 │       ├── hidden_ids.py
 │       ├── plot_theme.py
 │       └── primitives.py
