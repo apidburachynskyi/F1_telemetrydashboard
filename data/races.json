@@ -1,0 +1,288 @@
+{
+  "2024": [
+    {
+      "name": "Sakhir",
+      "date": "2024-03-02"
+    },
+    {
+      "name": "Jeddah",
+      "date": "2024-03-09"
+    },
+    {
+      "name": "Melbourne",
+      "date": "2024-03-24"
+    },
+    {
+      "name": "Suzuka",
+      "date": "2024-04-07"
+    },
+    {
+      "name": "Shanghai",
+      "date": "2024-04-21"
+    },
+    {
+      "name": "Miami",
+      "date": "2024-05-05"
+    },
+    {
+      "name": "Imola",
+      "date": "2024-05-19"
+    },
+    {
+      "name": "Monaco",
+      "date": "2024-05-26"
+    },
+    {
+      "name": "Montréal",
+      "date": "2024-06-09"
+    },
+    {
+      "name": "Barcelona",
+      "date": "2024-06-23"
+    },
+    {
+      "name": "Spielberg",
+      "date": "2024-06-30"
+    },
+    {
+      "name": "Silverstone",
+      "date": "2024-07-07"
+    },
+    {
+      "name": "Budapest",
+      "date": "2024-07-21"
+    },
+    {
+      "name": "Spa-Francorchamps",
+      "date": "2024-07-28"
+    },
+    {
+      "name": "Zandvoort",
+      "date": "2024-08-25"
+    },
+    {
+      "name": "Monza",
+      "date": "2024-09-01"
+    },
+    {
+      "name": "Baku",
+      "date": "2024-09-15"
+    },
+    {
+      "name": "Marina Bay",
+      "date": "2024-09-22"
+    },
+    {
+      "name": "Austin",
+      "date": "2024-10-20"
+    },
+    {
+      "name": "Mexico City",
+      "date": "2024-10-27"
+    },
+    {
+      "name": "São Paulo",
+      "date": "2024-11-03"
+    },
+    {
+      "name": "Las Vegas",
+      "date": "2024-11-23"
+    },
+    {
+      "name": "Lusail",
+      "date": "2024-12-01"
+    },
+    {
+      "name": "Yas Island",
+      "date": "2024-12-08"
+    }
+  ],
+  "2025": [
+    {
+      "name": "Melbourne",
+      "date": "2025-03-16"
+    },
+    {
+      "name": "Shanghai",
+      "date": "2025-03-23"
+    },
+    {
+      "name": "Suzuka",
+      "date": "2025-04-06"
+    },
+    {
+      "name": "Sakhir",
+      "date": "2025-04-13"
+    },
+    {
+      "name": "Jeddah",
+      "date": "2025-04-20"
+    },
+    {
+      "name": "Miami Gardens",
+      "date": "2025-05-04"
+    },
+    {
+      "name": "Imola",
+      "date": "2025-05-18"
+    },
+    {
+      "name": "Monaco",
+      "date": "2025-05-25"
+    },
+    {
+      "name": "Barcelona",
+      "date": "2025-06-01"
+    },
+    {
+      "name": "Montréal",
+      "date": "2025-06-15"
+    },
+    {
+      "name": "Spielberg",
+      "date": "2025-06-29"
+    },
+    {
+      "name": "Silverstone",
+      "date": "2025-07-06"
+    },
+    {
+      "name": "Spa-Francorchamps",
+      "date": "2025-07-27"
+    },
+    {
+      "name": "Budapest",
+      "date": "2025-08-03"
+    },
+    {
+      "name": "Zandvoort",
+      "date": "2025-08-31"
+    },
+    {
+      "name": "Monza",
+      "date": "2025-09-07"
+    },
+    {
+      "name": "Baku",
+      "date": "2025-09-21"
+    },
+    {
+      "name": "Marina Bay",
+      "date": "2025-10-05"
+    },
+    {
+      "name": "Austin",
+      "date": "2025-10-19"
+    },
+    {
+      "name": "Mexico City",
+      "date": "2025-10-26"
+    },
+    {
+      "name": "São Paulo",
+      "date": "2025-11-09"
+    },
+    {
+      "name": "Las Vegas",
+      "date": "2025-11-22"
+    },
+    {
+      "name": "Lusail",
+      "date": "2025-11-30"
+    },
+    {
+      "name": "Yas Island",
+      "date": "2025-12-07"
+    }
+  ],
+  "2026": [
+    {
+      "name": "Melbourne",
+      "date": "2026-03-08"
+    },
+    {
+      "name": "Shanghai",
+      "date": "2026-03-15"
+    },
+    {
+      "name": "Suzuka",
+      "date": "2026-03-29"
+    },
+    {
+      "name": "Miami Gardens",
+      "date": "2026-05-03"
+    },
+    {
+      "name": "Montréal",
+      "date": "2026-05-24"
+    },
+    {
+      "name": "Monte Carlo",
+      "date": "2026-06-07"
+    },
+    {
+      "name": "Barcelona",
+      "date": "2026-06-14"
+    },
+    {
+      "name": "Spielberg",
+      "date": "2026-06-28"
+    },
+    {
+      "name": "Silverstone",
+      "date": "2026-07-05"
+    },
+    {
+      "name": "Spa-Francorchamps",
+      "date": "2026-07-19"
+    },
+    {
+      "name": "Budapest",
+      "date": "2026-07-26"
+    },
+    {
+      "name": "Zandvoort",
+      "date": "2026-08-23"
+    },
+    {
+      "name": "Monza",
+      "date": "2026-09-06"
+    },
+    {
+      "name": "Madrid",
+      "date": "2026-09-13"
+    },
+    {
+      "name": "Baku",
+      "date": "2026-09-26"
+    },
+    {
+      "name": "Marina Bay",
+      "date": "2026-10-11"
+    },
+    {
+      "name": "Austin",
+      "date": "2026-10-25"
+    },
+    {
+      "name": "Mexico City",
+      "date": "2026-11-01"
+    },
+    {
+      "name": "São Paulo",
+      "date": "2026-11-08"
+    },
+    {
+      "name": "Las Vegas",
+      "date": "2026-11-21"
+    },
+    {
+      "name": "Lusail",
+      "date": "2026-11-29"
+    },
+    {
+      "name": "Yas Marina",
+      "date": "2026-12-06"
+    }
+  ]
+}

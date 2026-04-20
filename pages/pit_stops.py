@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, callback
+from components.perf_metrics import tab_timer
 from components.shared import BG2, BG3, GRID, TEXT, MUTED, ACCENT, FONT
 from components.charts.pit_stops import (
     prepare_pit_data,
@@ -299,6 +300,7 @@ layout = html.Div(id="pitstops-container", children=[empty()])
     Input("store-race", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("pitstops")
 def render(store):
     if not store:
         return empty()

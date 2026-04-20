@@ -2,6 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, callback
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     BG2,
     BG3,
@@ -427,7 +428,11 @@ def empty():
     )
 
 
-layout = html.Div(id="progression-container", children=[empty()])
+layout = dcc.Loading(
+    type="circle",
+    color="#e8002d",
+    children=html.Div(id="progression-container", children=[empty()]),
+)
 
 
 @callback(
@@ -436,6 +441,7 @@ layout = html.Div(id="progression-container", children=[empty()])
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("progression")
 def render(store, selected_drivers):
     if not store:
         return empty()

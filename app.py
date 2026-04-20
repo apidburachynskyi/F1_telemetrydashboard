@@ -4,6 +4,8 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc, Input, Output, State, ctx, ALL
 from flask_caching import Cache
+from flask import request, Response
+from functools import wraps
 import fastf1
 from pathlib import Path
 
@@ -22,6 +24,7 @@ from components.sidebar import build_sidebar
 from components.shared import (
     AVAILABLE_YEARS,
     PRELOADED_RACES,
+    RACE_DATES,
     BG2,
     GRID,
     TEXT,
@@ -53,6 +56,137 @@ server = app.server
 @server.route("/health")
 def health():
     return {"status": "ok"}, 200
+
+
+_MONITORING_USER = os.environ.get("MONITORING_USER", "admin")
+_MONITORING_PASSWORD = os.environ.get("MONITORING_PASSWORD", "f1admin2026")
+
+
+def _require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if (
+            not auth
+            or auth.username != _MONITORING_USER
+            or auth.password != _MONITORING_PASSWORD
+        ):
+            return Response(
+                "Access denied",
+                401,
+                {"WWW-Authenticate": 'Basic realm="F1 Monitoring"'},
+            )
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+@server.route("/monitoring")
+@_require_auth
+def monitoring_page():
+    import psutil
+    from components.perf_metrics import RENDER_HISTORY
+    from prometheus_client import REGISTRY
+
+    proc = psutil.Process()
+    ram_mb = proc.memory_info().rss / 1024 / 1024
+    cpu_pct = proc.cpu_percent(interval=0.1)
+
+    tab_labels = {
+        "overview": "Overview",
+        "qualifying": "Qualifying",
+        "replay": "Race Replay",
+        "corner": "Corner Analysis",
+        "tyre": "Tyre Analysis",
+        "lap": "Lap Analysis",
+        "progression": "Race Progression",
+        "pitstops": "Pit Stops",
+    }
+    total_req = 0
+    for metric in REGISTRY.collect():
+        if metric.name == "f1_tab_render_seconds":
+            for s in metric.samples:
+                if s.name == "f1_tab_render_seconds_count":
+                    total_req += s.value
+
+    counts, sums = {}, {}
+    for metric in REGISTRY.collect():
+        if metric.name != "f1_tab_render_seconds":
+            continue
+        for s in metric.samples:
+            tab = s.labels.get("tab", "?")
+            if s.name == "f1_tab_render_seconds_count":
+                counts[tab] = s.value
+            elif s.name == "f1_tab_render_seconds_sum":
+                sums[tab] = s.value
+    rows = sorted(
+        [
+            {
+                "tab": tab_labels.get(t, t),
+                "calls": int(counts[t]),
+                "avg": round(sums.get(t, 0) / counts[t], 2) if counts[t] else 0,
+            }
+            for t in counts
+        ],
+        key=lambda r: r["avg"],
+        reverse=True,
+    )
+    last_render = f"{RENDER_HISTORY[-1]['duration']:.2f}s" if RENDER_HISTORY else "—"
+
+    def color(avg):
+        if avg > 5:
+            return "#e8002d"
+        if avg > 1:
+            return "#00d2be"
+        return "#39b54a"
+
+    rows_html = "".join(
+        f"<tr><td>{r['tab']}</td><td>{r['calls']}</td>"
+        f"<td style='color:{color(r['avg'])};font-weight:700'>{r['avg']:.2f}s</td></tr>"
+        for r in rows
+    )
+    html_page = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>F1 Dashboard — Monitoring</title>
+  <meta http-equiv="refresh" content="15">
+  <style>
+    body{{background:#08090d;color:#ccc;font-family:sans-serif;padding:32px;}}
+    h1{{font-size:18px;letter-spacing:3px;color:#fff;margin-bottom:24px;}}
+    .cards{{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}}
+    .card{{background:#0d0f14;border:1px solid #1e2229;border-radius:8px;padding:16px 22px;min-width:140px;}}
+    .label{{font-size:10px;color:#555;letter-spacing:1.5px;font-weight:700;margin-bottom:6px;}}
+    .value{{font-size:26px;font-weight:700;color:#fff;}}
+    table{{width:100%;border-collapse:collapse;background:#0d0f14;border:1px solid #1e2229;border-radius:8px;}}
+    th{{font-size:10px;color:#555;letter-spacing:1px;padding:10px 16px;text-align:left;border-bottom:1px solid #1e2229;}}
+    td{{padding:10px 16px;font-size:13px;border-bottom:1px solid #12141a;}}
+    tr:last-child td{{border-bottom:none;}}
+    .legend{{font-size:11px;color:#555;margin-top:10px;}}
+    .note{{font-size:10px;color:#333;margin-top:24px;}}
+  </style>
+</head>
+<body>
+  <h1>F1 DASHBOARD — MONITORING</h1>
+  <div class="cards">
+    <div class="card"><div class="label">LAST RENDER</div>
+      <div class="value">{last_render}</div></div>
+    <div class="card"><div class="label">TOTAL RENDERS</div>
+      <div class="value">{int(total_req)}</div></div>
+    <div class="card"><div class="label">RAM USAGE</div>
+      <div class="value" style="color:{'#e8002d' if ram_mb > 3000 else '#fff'}">{ram_mb:.0f} MB</div></div>
+    <div class="card"><div class="label">CPU</div>
+      <div class="value" style="color:{'#e8002d' if cpu_pct > 80 else '#fff'}">{cpu_pct:.1f}%</div></div>
+  </div>
+  <table>
+    <thead><tr><th>TAB</th><th>CALLS</th><th>AVG RENDER</th></tr></thead>
+    <tbody>{rows_html}</tbody>
+  </table>
+  <div class="legend">&#x1F7E2; &lt;1s &nbsp; &#x1F535; 1–5s &nbsp; &#x1F534; &gt;5s</div>
+  <div class="note">Auto-refresh every 15s</div>
+</body>
+</html>"""
+    return html_page, 200, {"Content-Type": "text/html"}
 
 
 # Server-side session cache
@@ -475,77 +609,6 @@ app.layout = html.Div(
         dcc.Store(id="store-selected-drivers", data=[]),
         dcc.Store(id="active-tab", data="overview"),
         html.Div(id="app-root", children=[landing_page()]),
-        # Splash
-        # Disapear after 15 seconds, circa time of loading
-        html.Div(
-            id="splash-overlay",
-            style={"display": "none"},
-            children=[
-                html.Div(
-                    style={
-                        "position": "fixed",
-                        "top": "0",
-                        "left": "0",
-                        "width": "100%",
-                        "height": "100%",
-                        "background": "rgba(8,9,13,0.92)",
-                        "display": "flex",
-                        "alignItems": "center",
-                        "justifyContent": "center",
-                        "zIndex": "9999",
-                    },
-                    children=[
-                        html.Div(
-                            style={
-                                "background": "#0d0f14",
-                                "border": "1px solid #1a1d24",
-                                "borderRadius": "12px",
-                                "padding": "40px 52px",
-                                "display": "flex",
-                                "flexDirection": "column",
-                                "alignItems": "center",
-                                "gap": "20px",
-                                "minWidth": "280px",
-                            },
-                            children=[
-                                dcc.Loading(
-                                    type="circle",
-                                    color="#e8002d",
-                                    children=html.Div(
-                                        id="splash-trigger", style={"height": "8px"}
-                                    ),
-                                ),
-                                html.Div(
-                                    "BUILDING DASHBOARD",
-                                    style={
-                                        "fontSize": "13px",
-                                        "fontWeight": "700",
-                                        "letterSpacing": "3px",
-                                        "color": "#e0e0e0",
-                                    },
-                                ),
-                                html.Div(
-                                    id="splash-status",
-                                    children="Loading session data…",
-                                    style={
-                                        "fontSize": "11px",
-                                        "color": "#555",
-                                        "letterSpacing": "1px",
-                                    },
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
-            ],
-        ),
-        dcc.Interval(
-            id="splash-timer",
-            interval=7000,
-            n_intervals=0,
-            max_intervals=1,
-            disabled=True,
-        ),
     ],
 )
 
@@ -578,9 +641,26 @@ def navigate(*_):
     Input("dd-year", "value"),
 )
 def update_gp_options(year):
+    from datetime import date
+
+    today = str(date.today())
     races = PRELOADED_RACES.get(int(year), [])
-    options = [{"label": r, "value": r} for r in races]
-    return options, (races[0] if races else None)
+    dates = RACE_DATES.get(int(year), {})
+    options = []
+    first_available = None
+    for r in races:
+        race_date = dates.get(r, "")
+        past = not race_date or race_date <= today
+        if past and first_available is None:
+            first_available = r
+        options.append(
+            {
+                "label": r if past else f"{r} — {race_date}",
+                "value": r,
+                "disabled": not past,
+            }
+        )
+    return options, first_available
 
 
 # Load session
@@ -608,21 +688,14 @@ def load_session(_, year, gp):
         no_change[3] = "Select year and GP."
         return no_change
 
-    # Load Race
     try:
-        race_session = get_cached_session(year, gp, "R")
-        store_race = session_to_store(race_session)
-    except Exception as e:
-        no_change[0] = None
-        no_change[3] = f"Race load error: {str(e)[:80]}"
+        store_race = session_to_store(get_cached_session(year, gp, "R"))
+    except Exception:
         store_race = None
 
-    # Load Qualifying
     try:
-        quali_session = get_cached_session(year, gp, "Q")
-        store_quali = session_to_store(quali_session)
-    except Exception as e:
-        no_change[1] = None
+        store_quali = session_to_store(get_cached_session(year, gp, "Q"))
+    except Exception:
         store_quali = None
 
     if store_race is None and store_quali is None:
@@ -740,45 +813,52 @@ def sync_driver_selection(selected):
     return selected or []
 
 
-@app.callback(
-    Output("splash-trigger", "children"),
-    Input("store-race", "data"),
-    prevent_initial_call=True,
-)
-def _splash_spin(_):
-    # Loading goes spinning
-    return ""
+TAB_IDS = [tid for tid, _, _ in TABS]
 
+# Tab switch — clientside so nginx never blocks it
+app.clientside_callback(
+    """
+    function() {
+        var args = Array.prototype.slice.call(arguments);
+        var n_clicks = args.slice(0, args.length - 1);
+        var active = args[args.length - 1];
+        var tab_ids = """
+    + str(TAB_IDS)
+    + """;
 
-# If data is there, Splash after 7 seconds gone
-@app.callback(
-    Output("splash-overlay", "style"),
-    Output("splash-timer", "disabled"),
-    Output("splash-timer", "n_intervals"),
-    Output("splash-status", "children"),
-    Input("splash-timer", "n_intervals"),
-    Input("store-race", "data"),
-    prevent_initial_call=True,
-)
-def manage_splash(n_intervals, store_race):
-    triggered = ctx.triggered[0]["prop_id"] if ctx.triggered else ""
+        var triggered = window.dash_clientside.callback_context.triggered;
+        if (!triggered || triggered.length === 0) {
+            return window.dash_clientside.no_update;
+        }
 
-    SHOW = {"display": "block"}
-    HIDE = {"display": "none"}
+        var prop_id = triggered[0].prop_id;
+        var new_tab = prop_id.replace('tab-btn-', '').replace('.n_clicks', '');
 
-    # If Data counter = 0
-    if "store-race" in triggered and store_race:
-        return SHOW, False, 0, "Finalising all tabs…"
+        var page_styles = tab_ids.map(function(tid) {
+            return tid === new_tab ? {display: 'block'} : {display: 'none'};
+        });
 
-    # Timer disapear
-    if "splash-timer" in triggered and n_intervals and n_intervals > 0:
-        return HIDE, True, 0, ""
+        var accent = '"""
+    + ACCENT
+    + """';
+        var text = '"""
+    + TEXT
+    + """';
+        var btn_styles = tab_ids.map(function(tid) {
+            var active = tid === new_tab;
+            return {
+                padding: '12px 14px',
+                fontSize: '11px', fontWeight: '700', letterSpacing: '1px',
+                color: active ? text : '#555',
+                background: 'transparent', border: 'none',
+                borderBottom: active ? '2px solid ' + accent : '2px solid transparent',
+                cursor: 'pointer', whiteSpace: 'nowrap'
+            };
+        });
 
-    raise dash.exceptions.PreventUpdate
-
-
-# Tab switch
-@app.callback(
+        return [new_tab].concat(page_styles).concat(btn_styles);
+    }
+    """,
     Output("active-tab", "data"),
     *[Output(f"page-{tid}", "style") for tid, _, _ in TABS],
     *[Output(f"tab-btn-{tid}", "style") for tid, _, _ in TABS],
@@ -786,16 +866,6 @@ def manage_splash(n_intervals, store_race):
     State("active-tab", "data"),
     prevent_initial_call=True,
 )
-def switch_tab(*args):
-    if not ctx.triggered:
-        raise dash.exceptions.PreventUpdate
-    new_tab = ctx.triggered[0]["prop_id"].split(".")[0].replace("tab-btn-", "")
-    page_styles = [
-        {"display": "block"} if tid == new_tab else {"display": "none"}
-        for tid, _, _ in TABS
-    ]
-    btn_styles = [_tab_style(tid == new_tab) for tid, _, _ in TABS]
-    return [new_tab] + page_styles + btn_styles
 
 
 if __name__ == "__main__":

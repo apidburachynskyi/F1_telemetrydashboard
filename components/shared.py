@@ -14,10 +14,97 @@ fastf1.Cache.enable_cache(CACHE_DIR)
 
 
 # Available races─
-PRELOADED_RACES = {
-    2025: ["Bahrain", "Saudi Arabia", "Australia", "Monaco", "Silverstone"],
-    2024: ["Bahrain", "Monaco", "Silverstone", "Monza", "Abu Dhabi"],
+_FALLBACK_RACES = {
+    2026: [
+        "Melbourne",
+        "Shanghai",
+        "Suzuka",
+    ],
+    2025: [
+        "Melbourne",
+        "Shanghai",
+        "Suzuka",
+        "Sakhir",
+        "Jeddah",
+        "Miami Gardens",
+        "Imola",
+        "Monte Carlo",
+        "Barcelona",
+        "Montreal",
+        "Spielberg",
+        "Silverstone",
+        "Spa-Francorchamps",
+        "Budapest",
+        "Zandvoort",
+        "Monza",
+        "Baku",
+        "Marina Bay",
+        "Austin",
+        "Mexico City",
+        "São Paulo",
+        "Las Vegas",
+        "Lusail",
+        "Yas Marina",
+    ],
+    2024: [
+        "Sakhir",
+        "Jeddah",
+        "Melbourne",
+        "Suzuka",
+        "Shanghai",
+        "Miami Gardens",
+        "Imola",
+        "Monte Carlo",
+        "Montreal",
+        "Barcelona",
+        "Spielberg",
+        "Silverstone",
+        "Budapest",
+        "Spa-Francorchamps",
+        "Zandvoort",
+        "Monza",
+        "Baku",
+        "Marina Bay",
+        "Austin",
+        "Mexico City",
+        "São Paulo",
+        "Las Vegas",
+        "Lusail",
+        "Yas Marina",
+    ],
 }
+
+
+def _load_races() -> tuple[dict, dict]:
+    """
+    Read races.json if available, else fall back to hardcoded list.
+    Returns (PRELOADED_RACES, RACE_DATES).
+    PRELOADED_RACES: {year: [name, ...]}
+    RACE_DATES:      {year: {name: "YYYY-MM-DD"}}
+    """
+    races_json = Path(__file__).parent.parent / "data" / "races.json"
+    if races_json.exists():
+        try:
+            import json as _json
+
+            raw = _json.loads(races_json.read_text())
+            races, dates = {}, {}
+            for k, entries in raw.items():
+                year = int(k)
+                # entries can be list of str (old) or list of {name, date} (new)
+                if entries and isinstance(entries[0], dict):
+                    races[year] = [e["name"] for e in entries]
+                    dates[year] = {e["name"]: e["date"] for e in entries}
+                else:
+                    races[year] = entries
+                    dates[year] = {}
+            return races, dates
+        except Exception:
+            pass
+    return _FALLBACK_RACES, {}
+
+
+PRELOADED_RACES, RACE_DATES = _load_races()
 AVAILABLE_YEARS = sorted(PRELOADED_RACES.keys(), reverse=True)
 AVAILABLE_SESSIONS = [
     {"label": "Race", "value": "R"},
@@ -426,6 +513,8 @@ def session_to_store(session):
         ] + [c + "Sec" for c in time_cols if c in laps.columns]
         keep = [c for c in keep if c in laps.columns]
 
+        float_cols = [c for c in keep if "Sec" in c or c == "LapTimeSec"]
+        laps[float_cols] = laps[float_cols].round(3)
         store["laps"] = laps[keep].where(pd.notna(laps[keep]), None).to_dict("records")
     except Exception:
         store["laps"] = []

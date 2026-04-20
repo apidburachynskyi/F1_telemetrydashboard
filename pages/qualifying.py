@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, callback, ctx
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     BG2,
     BG3,
@@ -424,6 +425,7 @@ layout = html.Div(id="quali-container", children=[empty()])
     Input("store-quali", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("qualifying")
 def render(store):
     if not store:
         return empty()

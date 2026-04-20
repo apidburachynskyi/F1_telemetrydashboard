@@ -1,6 +1,7 @@
 import pandas as pd
 from dash import html, dcc, Input, Output, callback
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     BG2,
     BG3,
@@ -283,6 +284,7 @@ layout = html.Div(
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("lap")
 def render(store, session_key, selected_drivers):
     """Render the lap analysis page."""
     if not store:

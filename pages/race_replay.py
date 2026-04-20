@@ -1,7 +1,8 @@
 import numpy as np
 import plotly.graph_objects as go
-from dash import html, dcc, Input, Output, State, callback
+from dash import html, dcc, Input, Output, State, callback, clientside_callback
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     BG2,
     GRID,
@@ -12,8 +13,8 @@ from components.shared import (
     get_driver_meta,
 )
 
-N_FRAMES_PER_LAP = 120  # animation frames per race lap
-N_TRACK_PTS = 400  # GPS resample resolution
+_FRAMES_BY_SPEED = {0.5: 120, 1.0: 60, 2.0: 30, 4.0: 15}
+N_TRACK_PTS = 200  # GPS resample resolution
 
 
 def _resample(arr, n):
@@ -23,7 +24,7 @@ def _resample(arr, n):
     return np.interp(np.linspace(0, 1, n), np.linspace(0, 1, len(a)), a)
 
 
-def _load_replay_data(session, drivers):
+def _load_replay_data(session, drivers, n_frames_per_lap=60):
     """
     Returns dict per driver:
     color, track_x, track_y (resampled GPS),
@@ -67,7 +68,7 @@ def _load_replay_data(session, drivers):
             # DOESNT WORK DOESNT MATTER NEED REBUILD
 
             n_laps = len(lap_times)
-            n_frames = n_laps * N_FRAMES_PER_LAP
+            n_frames = n_laps * n_frames_per_lap
             total_time = cum_time[-1]
             frame_times = np.linspace(0, total_time, n_frames)
 
@@ -227,12 +228,12 @@ def build_static_fig(ref_x, ref_y, driver_data, dlist):
     return fig, n_static, dot_indices
 
 
-def add_animation(fig, driver_data, dlist, dot_indices, speed=1.0):
+def add_animation(fig, driver_data, dlist, dot_indices, speed=1.0, n_frames_per_lap=60):
     """Add animation frames and controls to the static figure."""
     # Global time axis
     total_time = max(d["total_time"] for d in driver_data.values())
     total_laps = max(d["total_laps"] for d in driver_data.values())
-    n_frames = total_laps * N_FRAMES_PER_LAP
+    n_frames = total_laps * n_frames_per_lap
 
     # Global frame times (same for every driver)
     global_frame_times = np.linspace(0, total_time, n_frames)
@@ -250,8 +251,8 @@ def add_animation(fig, driver_data, dlist, dot_indices, speed=1.0):
             (progress % TRACK_LENGTH).astype(int), 0, N_TRACK_PTS - 1
         )
 
-    frame_duration_ms = max(16, int(50 / speed))  # ~20fps at 1x
-    frames_per_lap = N_FRAMES_PER_LAP
+    frame_duration_ms = max(16, int(50 / speed))
+    frames_per_lap = n_frames_per_lap
 
     # only update dot traces
     fig.frames = [
@@ -382,17 +383,25 @@ def build_replay(session_key, drivers, speed=1.0):
     except Exception:
         return go.Figure()
 
-    driver_data, ref_x, ref_y = _load_replay_data(session, drivers)
+    n_frames_per_lap = _FRAMES_BY_SPEED.get(speed, 60)
+    driver_data, ref_x, ref_y = _load_replay_data(session, drivers, n_frames_per_lap)
     if not driver_data or ref_x is None:
         return go.Figure()
 
     dlist = list(driver_data.keys())
-    # Store drv code inside each dict for _frame_traces
     for drv in dlist:
         driver_data[drv]["drv"] = drv
 
     fig, n_static, dot_indices = build_static_fig(ref_x, ref_y, driver_data, dlist)
-    fig = add_animation(fig, driver_data, dlist, dot_indices, speed=speed)
+    fig = add_animation(
+        fig,
+        driver_data,
+        dlist,
+        dot_indices,
+        speed=speed,
+        n_frames_per_lap=n_frames_per_lap,
+    )
+    fig.update_layout(uirevision=f"{session_key}-{speed}-{','.join(sorted(drivers))}")
     return fig
 
 
@@ -454,6 +463,7 @@ layout = dcc.Loading(
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("replay")
 def render(store, session_key, selected_drivers):
     if not store or not session_key:
         return empty()
@@ -550,7 +560,7 @@ def render(store, session_key, selected_drivers):
                     ),
                     html.Div(
                         f"{ev.get('name', '')} {ev.get('year', '')} — "
-                        f"Smooth interpolated replay  ·  {N_FRAMES_PER_LAP} frames/lap  ·  Hit ▶ to play",
+                        f"Smooth interpolated replay  ·  Hit ▶ to play",
                         style={
                             "fontSize": "11px",
                             "color": "#444",
@@ -564,6 +574,7 @@ def render(store, session_key, selected_drivers):
                             id="replay-chart-wrap",
                             children=[
                                 dcc.Graph(
+                                    id=f"replay-graph-{session_key}",
                                     figure=build_replay(
                                         session_key, drivers, speed=1.0
                                     ),
@@ -576,6 +587,22 @@ def render(store, session_key, selected_drivers):
             ),
         ]
     )
+
+
+clientside_callback(
+    """
+    function(session_key) {
+        var graphs = document.querySelectorAll('#replay-chart-wrap .js-plotly-plot');
+        graphs.forEach(function(g) {
+            try { Plotly.animate(g, [], {mode: 'immediate'}); } catch(e) {}
+        });
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("replay-chart-wrap", "style"),
+    Input("store-session-key", "data"),
+    prevent_initial_call=True,
+)
 
 
 @callback(
@@ -591,4 +618,8 @@ def update_speed(speed, session_key, selected_drivers):
 
         raise dash.exceptions.PreventUpdate
     fig = build_replay(session_key, selected_drivers or [], speed=speed or 1.0)
-    return dcc.Graph(figure=fig, config={"displayModeBar": False})
+    return dcc.Graph(
+        id=f"replay-graph-{session_key}-{speed}",
+        figure=fig,
+        config={"displayModeBar": False},
+    )

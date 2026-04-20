@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from dash import html, dcc, Input, Output, callback
 
+from components.perf_metrics import tab_timer
 from components.shared import (
     TYRE_COLORS,
     BG2,
@@ -375,7 +376,11 @@ def empty():
 
 # Layout + callback
 
-layout = html.Div(id="tyre-container", children=[empty()])
+layout = dcc.Loading(
+    type="circle",
+    color="#e8002d",
+    children=html.Div(id="tyre-container", children=[empty()]),
+)
 
 
 @callback(
@@ -384,6 +389,7 @@ layout = html.Div(id="tyre-container", children=[empty()])
     Input("store-selected-drivers", "data"),
     prevent_initial_call=True,
 )
+@tab_timer("tyre")
 def render(store, selected_drivers):
     if not store:
         return empty()
