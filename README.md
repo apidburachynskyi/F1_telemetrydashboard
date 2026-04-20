@@ -81,7 +81,7 @@ pip install -r requirements.txt
 python app.py
 
 Then open [http://localhost:8050](http://localhost:8050).
-
+```
 ---
 ## Architecture
 
