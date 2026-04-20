@@ -254,4 +254,3 @@ f1-dashboard/
     ├── ingress.yaml
     └── service.yaml
 ```
-```
