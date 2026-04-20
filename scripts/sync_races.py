@@ -1,18 +1,7 @@
 #!/usr/bin/env python
 """
-Weekly sync script — downloads completed race/qualifying sessions into
-the FastF1 cache, updates races.json, then uploads everything to S3.
+Weekly sync script downloads completed race/qualifying sessions into
 
-Usage:
-    python scripts/sync_races.py [--years 2024 2025 2026] [--no-download] [--no-upload]
-
-Kubernetes CronJob runs this every Monday:
-  1. Downloads new sessions from F1 API → local cache
-  2. Uploads cache to S3 (bucket mascret/f1-dashboard-cache/)
-  3. Updates races.json
-
-At pod startup, entrypoint.sh downloads the cache from S3 so the app
-starts with all data pre-loaded (no wait for users).
 """
 import argparse
 import json
