@@ -7,6 +7,8 @@
 ![Docker](https://img.shields.io/badge/Docker-ready-2496ED)
 ![ArgoCD](https://img.shields.io/badge/ArgoCD-deployed-orange)
 
+![F1 Dashboard Demo](assets/f1_dashboard_demo_fast.gif)
+
 - **Primary deployment (SSP Cloud):** [https://f1-dashboard.user.lab.sspcloud.fr/](https://f1-dashboard.user.lab.sspcloud.fr/)
 - **Alternative deployment (Railway):** [https://www.f1telemetry.live/](https://www.f1telemetry.live/)
 
