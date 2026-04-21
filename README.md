@@ -180,9 +180,6 @@ It displays:
 ## Project Structure
 
 ```text
-## Project Structure
-
-```text
 f1-dashboard/
 │
 ├── app.py                  # Main Dash app: app/server setup, Flask routes, cache, callbacks
