@@ -98,7 +98,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies (Python 3.11.x required)
+### 3. Install dependencies (Python 3.11.x or 3.12.x required)
 
 ```bash
 pip install -r requirements.txt
